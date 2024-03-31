@@ -19,7 +19,6 @@ def generate_random_birthdate(start_date, end_date):
     
     return random_date.strftime("%d.%m.%Y")
 
-# Пример использования
 start_date = "01.01.1970"
 end_date = "31.12.2006"
 random_birthdate = generate_random_birthdate(start_date, end_date)
@@ -32,7 +31,6 @@ def generate_profile(n):
     adjectives = ["sky", "fire", "ice", "wind", "earth", "shadow", "light", "water", "critical", "star", "agressive", "bad", "additional", "blue", "black", "red", "white", "hard", "light", "cool", "cold", "alive", 
                   "angry", "crazy", "basic", "boring", "central", "clear", "common", "curious", "current", "dark", "deep", "dead", "desperate", "early", "easy", "every", "final", "free", "freedom",
                    "general", "global", "great", "high", "hot", "huge", "impressive", "large", "late", "little", "local", "lucky", "main", "mantal", "military", "old", "hyper"]
-    cool_numbers = ["007", "13", "69", "123", "228", "420", "666", "777", "911"]
     names = ["Mary", "Patricia", "Linda", "Barbara", "Elizabeth", "Jennifer", "Maria", "Susan", "Margaret", "Lisa", "Nancy", "Karen", "Betty", "Helen", "Sandra", "Sharon", "Sarah", "Amber", 
                     "Jessica", "Angela", "Melissa", "Martha", "James", "John", "Robert", "Michael", "William", "David", "Richard", "Charles", "Joseph", "Thomas", "Christopher", "Daniel", 
                     "Paul", "Mark", "Donald", "George", "Steven", "Edward", "Brian", "Ronald", "Anthony", "Kevin", "Jason", "Frank", "Scott", "Eric", "Andrew", "Peter", "Walter", "Samuel", 
@@ -43,12 +41,22 @@ def generate_profile(n):
                 "Price", "Barnes", "Henderson", "Jenkins", "Powell", "Flores", "Diaz", "Hayes"]
     domains = ["example.com", "mail.com", "inbox.com", "mailworld.com", "emailplanet.org", "letterbox.co", "post.com", "message.io", "sendmail.today",
     "mailbox.com", "emailservice.io", "digitalpost.net", "virtualmail.com", "proton.me", "gmail.com"]
+    cities_and_countries = {
+    'USA': ['New York', 'Los Angeles', 'Chicago', 'Houston', 'San Francisco', 'Miami', 'Seattle', 'Washington D.C.', 'Boston', 'Las Vegas'],
+    'Poland': ['Warsaw', 'Krakow', 'Lodz', 'Wroclaw', 'Poznan', 'Gdansk', 'Szczecin', 'Bydgoszcz', 'Lublin', 'Katowice'],
+    'Germany': ['Berlin', 'Munich', 'Frankfurt', 'Hamburg', 'Cologne', 'Stuttgart', 'Dusseldorf', 'Dortmund', 'Essen', 'Leipzig'],
+    'UK': ['London', 'Birmingham', 'Manchester', 'Glasgow', 'Leeds', 'Liverpool', 'Newcastle', 'Belfast', 'Cardiff', 'Edinburgh'],
+    'Canada': ['Toronto', 'Montreal', 'Vancouver', 'Calgary', 'Edmonton', 'Ottawa', 'Winnipeg', 'Quebec City', 'Hamilton', 'Halifax']
+}
+    cool_numbers = ["007", "13", "42", "69", "88", "123", "228", "420", "666", "777", "911"]
     characters = string.ascii_letters + string.digits + "!@#$%^&*()"
 
     profiles = []
     for _ in range(n):
         name = random.choice(names)
         surname = random.choice(surnames)
+        country = random.choice(list(cities_and_countries.keys()))
+        city = random.choice(cities_and_countries[country])
         noun = random.choice(nouns)
         cool_number = random.choice(cool_numbers)
         adjective = random.choice(adjectives)
@@ -57,7 +65,7 @@ def generate_profile(n):
         domain = random.choice(domains)
         email = f"{name.lower()}.{surname.lower()}{cool_number}@{domain}"
         password = ''.join(random.choice(characters) for _ in range(18))
-        profile = f"{name} {surname} | {birthday} | {email} | {nickname} | {password}"
+        profile = f"{name} {surname} | {city}, {country} | {birthday} | {email} | {nickname} | {password}"
         profiles.append(profile)
     return profiles
 
@@ -67,9 +75,7 @@ def save_profiles_to_file(profiles, filename):
         for profile in profiles:
             file.write(profile + '\n')
 
-# Генерируем 100 никнеймов
 profiles = generate_profile(50)
-# Сохраняем никнеймы в файл
 filename = 'profiles.txt'
 save_profiles_to_file(profiles, filename)
 
