@@ -2,7 +2,7 @@ import os
 import random
 import string
 import datetime
-from flask import Flask, request, jsonify, render_template, send_file
+from flask import Flask, request, jsonify, render_template_string, send_file
 import json
 
 app = Flask(__name__)
@@ -43,7 +43,12 @@ def generate_profile(n):
         surname = random.choice(surnames)
         domain = random.choice(domains)
         email = f"{name.lower()}.{surname.lower()}@{domain}"
-        nickname = f"{random.choice(adjectives)}_{random.choice(nouns)}_{random.choice(cool_numbers)}"
+
+        # Генерация ника с рандомным соединителем "_"
+        connector1 = "_" if random.choice([True, False]) else "" # 50% шанс на использование "_"
+        connector2 = "_" if random.choice([True, False]) else "" # 50% шанс на использование "_"
+        nickname = f"{random.choice(adjectives)}{connector1}{random.choice(nouns)}{connector2}{random.choice(cool_numbers)}"
+
         birthday = generate_random_birthdate("01.01.1970", "31.12.2006")
         country = random.choice(list(cities_and_countries.keys()))
         city = random.choice(cities_and_countries[country])
@@ -62,14 +67,113 @@ def generate_profile(n):
 
 @app.route("/", methods=["GET"])
 def home():
-    return (
-        "<h1>Digital-identity v 1.4 </h1>"
-        "<form action='/generate_profiles' method='get'>"
-        "<label for='count'>Number of profiles:</label>"
-        "<input type='number' id='count' name='count' value='10' min='1'>"
-        "<button type='submit'>Generate</button>"
-        "</form>"
-    )
+    html = '''
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Digital-identity v1.5</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 2em;
+                background-color: #121212;
+                color: #e0e0e0;
+            }
+            h1 {
+                color: #bb86fc;
+                text-align: center;
+            }
+            form {
+                margin-bottom: 2em;
+                text-align: center;
+            }
+            input, button {
+                padding: 0.5em;
+                font-size: 1em;
+                margin: 0.2em;
+                background-color: #1f1f1f;
+                border: 1px solid #333;
+                color: #e0e0e0;
+                border-radius: 4px;
+            }
+            button {
+                background-color: #bb86fc;
+                border: none;
+                cursor: pointer;
+            }
+            button:hover {
+                background-color: #9c70f6;
+            }
+            .profiles {
+                margin-top: 2em;
+                border: 1px solid #333;
+                padding: 1em;
+                border-radius: 8px;
+                background-color: #1f1f1f;
+            }
+            .profile {
+                margin-bottom: 1em;
+                padding: 0.5em;
+                border-bottom: 1px solid #333;
+            }
+            .download-button {
+                margin-top: 2em;
+                display: block;
+                text-align: center;
+            }
+            .download-button a {
+                padding: 0.7em 1.5em;
+                background-color: #03dac6;
+                color: #121212;
+                text-decoration: none;
+                border-radius: 5px;
+            }
+            .download-button a:hover {
+                background-color: #01bfa5;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Digital-identity v1.8</h1>
+        <form action="/generate_profiles" method="get">
+            <label for="count">Number of profiles:</label>
+            <input type="number" id="count" name="count" value="10" min="1">
+            <button type="submit">Generate</button>
+        </form>
+        <div id="profiles" class="profiles"></div>
+        <div id="download" class="download-button"></div>
+        <script>
+            document.querySelector('form').onsubmit = async function(event) {
+                event.preventDefault();
+                const count = document.querySelector('#count').value;
+                const response = await fetch(`/generate_profiles?count=${count}`);
+                const profiles = await response.json();
+                const container = document.querySelector('#profiles');
+                const downloadContainer = document.querySelector('#download');
+                container.innerHTML = profiles.map(profile => `
+                    <div class="profile">
+                        <strong>Name:</strong> ${profile.name} <br>
+                        <strong>Email:</strong> ${profile.email} <br>
+                        <strong>Nickname:</strong> ${profile.nickname} <br>
+                        <strong>Birthday:</strong> ${profile.birthday} <br>
+                        <strong>Country:</strong> ${profile.country} <br>
+                        <strong>City:</strong> ${profile.city} <br>
+                        <strong>Password:</strong> ${profile.password}
+                    </div>
+                `).join('');
+
+                // Create a download link for the JSON file
+                const blob = new Blob([JSON.stringify(profiles, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                downloadContainer.innerHTML = `<a href="${url}" download="profiles.json">Download JSON</a>`;
+            };
+        </script>
+    </body>
+    </html>
+    '''
+    return render_template_string(html)
 
 @app.route("/generate_profiles", methods=["GET"])
 def generate_profiles():
@@ -77,13 +181,7 @@ def generate_profiles():
     try:
         count = int(request.args.get("count", 10))
         profiles = generate_profile(count)
-        file_path = os.path.join(DATA_FOLDER, "profiles.json")
-        with open(file_path, "w") as file:
-            json.dump(profiles, file, indent=4)
-        return (
-            jsonify(profiles),
-            {"Content-Disposition": "attachment;filename=profiles.json"}
-        )
+        return jsonify(profiles)
     except ValueError:
         return jsonify({"error": "Invalid count parameter, must be an integer."}), 400
 
