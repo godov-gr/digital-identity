@@ -52,7 +52,7 @@ def generate_profile(n):
         birthday = generate_random_birthdate("01.01.1970", "31.12.2006")
         country = random.choice(list(cities_and_countries.keys()))
         city = random.choice(cities_and_countries[country])
-        password = "".join(random.choices(characters, k=18))
+        password = "".join(random.choices(characters, k=14))
         profile = {
             "name": f"{name} {surname}",
             "email": email,
